@@ -70,11 +70,12 @@
 .cdot:hover { transform: scale(1.1); }
 .cdotSel { border-color: var(--accent) !important; transform: scale(1.1); }
 
-.canvasWrap { flex: 1; overflow: auto; display: flex; justify-content: center; padding: 40px 24px; }
+.canvasWrap { flex: 1; overflow: auto; display: flex; justify-content: center; }
 
 .page {
-  width: 640px; max-width: 100%; min-height: 560px;
-  border: 0.5px solid var(--border); position: relative;
+  width: 100%; max-width: 680px; min-height: 100%;
+  border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border);
+  position: relative;
 }
 .vignette { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 
@@ -91,7 +92,7 @@
 .fmtBtn:hover { background: var(--bg); color: var(--text); }
 
 .editor {
-  min-height: 480px; outline: none; word-break: break-word;
+  min-height: calc(100vh - 120px); outline: none; word-break: break-word;
   caret-color: var(--accent);
 }
 .editor:empty::before {

@@ -85,3 +85,10 @@
 
 .submit:hover { opacity: 0.85; }
 .submit:disabled { opacity: 0.4; }
+
+.back {
+  background: none; border: none; color: var(--faint);
+  font-size: 12px; text-align: center; margin-top: 4px;
+  transition: color .15s;
+}
+.back:hover { color: var(--muted); }
