@@ -26,7 +26,6 @@ export default function ViewerPage() {
   const [pages, setPages] = useState<string[]>([])
   const [current, setCurrent] = useState(0)
   const [episode, setEpisode] = useState<any>(null)
-  const [series, setSeries] = useState<any>(null)
   const [allEps, setAllEps] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showHud, setShowHud] = useState(false)
@@ -37,27 +36,16 @@ export default function ViewerPage() {
     async function load() {
       const supabase = createClient()
       const { data: ep } = await supabase
-        .from('episodes')
-        .select('*, series(*)')
-        .eq('id', episodeId)
-        .single()
-
+        .from('episodes').select('*, series(*)').eq('id', episodeId).single()
       if (!ep) { setLoading(false); return }
       setEpisode(ep)
-      setSeries(ep.series)
-
       const rawText = ep.content?.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ') || ''
       setPages(splitPages(rawText))
-
-      // Load other episodes in same series
       const { data: eps } = await supabase
-        .from('episodes')
-        .select('id, ep_number, title')
-        .eq('series_id', ep.series_id)
-        .eq('is_published', true)
+        .from('episodes').select('id, ep_number, title, password')
+        .eq('series_id', ep.series_id).eq('is_published', true)
         .order('ep_number', { ascending: true })
       if (eps) setAllEps(eps)
-
       setLoading(false)
     }
     load()
@@ -77,8 +65,12 @@ export default function ViewerPage() {
     hudTimer.current = setTimeout(() => setShowHud(false), 2000)
   }
 
-  function goToEp(id: string) {
-    router.push(`/viewer/${id}`)
+  function goToEp(ep: any) {
+    if (ep.password) {
+      const input = prompt('비밀번호를 입력하세요')
+      if (input !== ep.password) { alert('비밀번호가 틀렸어요'); return }
+    }
+    router.push(`/viewer/${ep.id}`)
   }
 
   useEffect(() => {
@@ -90,13 +82,8 @@ export default function ViewerPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [changePage])
 
-  if (loading) return (
-    <div className={styles.loading}>✦</div>
-  )
-
-  if (!episode) return (
-    <div className={styles.loading}>글을 찾을 수 없어요</div>
-  )
+  if (loading) return <div className={styles.loading}>✦</div>
+  if (!episode) return <div className={styles.loading}>글을 찾을 수 없어요</div>
 
   const pct = pages.length > 0 ? Math.round(((current + 1) / pages.length) * 100) : 0
   const currentEpIdx = allEps.findIndex(e => e.id === episodeId)
@@ -114,7 +101,6 @@ export default function ViewerPage() {
         triggerHud()
       }}
     >
-      {/* Left / Right click zones */}
       <div className={styles.leftZone} onClick={e => { e.stopPropagation(); changePage(-1) }} />
       <div className={styles.rightZone} onClick={e => { e.stopPropagation(); changePage(1) }} />
 
@@ -122,19 +108,12 @@ export default function ViewerPage() {
         <p className={styles.pageText}>{pages[current]}</p>
       </div>
 
-      {/* HUD */}
       <div className={`${styles.hud} ${showHud ? styles.hudShow : ''}`}>
-        <button
-          className={styles.hudNav}
-          disabled={!prevEp}
-          onClick={e => { e.stopPropagation(); prevEp && goToEp(prevEp.id) }}
-        >← 이전 화</button>
+        <button className={styles.hudNav} disabled={!prevEp}
+          onClick={e => { e.stopPropagation(); prevEp && goToEp(prevEp) }}>← 이전 화</button>
         <span className={styles.hudPct}>{pct}%</span>
-        <button
-          className={styles.hudNav}
-          disabled={!nextEp}
-          onClick={e => { e.stopPropagation(); nextEp && goToEp(nextEp.id) }}
-        >다음 화 →</button>
+        <button className={styles.hudNav} disabled={!nextEp}
+          onClick={e => { e.stopPropagation(); nextEp && goToEp(nextEp) }}>다음 화 →</button>
       </div>
     </div>
   )

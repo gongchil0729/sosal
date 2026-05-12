@@ -1,10 +1,10 @@
 'use client'
-import { Suspense, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import styles from './login.module.css'
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [mode, setMode] = useState<'login' | 'signup'>('login')
@@ -59,13 +59,5 @@ function LoginForm() {
         <button className={styles.back} onClick={() => router.push('/')}>← 돌아가기</button>
       </div>
     </div>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
   )
 }
